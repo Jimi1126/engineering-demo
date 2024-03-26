@@ -1,24 +1,37 @@
-name: CD
+# This workflow will do a clean installation of node dependencies, cache/restore them, build the source code and run tests across different versions of node
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-nodejs
+
+name: ssh cd
 
 on:
   push:
-    branches:
-      - master
+    branches: ['master']
   pull_request:
-    branches:
-      - master
+    branches: ['master']
 jobs:
-  release:
+  build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
+      - uses: actions/checkout@v3
+      - name: Use Node.js Build
+        uses: actions/setup-node@v3
         with:
           node-version: 20.8.1
-      # https://github.com/semantic-release/git/issues/209
       - run: npm ci --ignore-scripts
+      - run: npm install
       - run: npm run build
-      - run: npx semantic-release
+      - run: ls -l
+      - name: scp ssh pipelines
+        uses: cross-the-world/ssh-scp-ssh-pipelines@latest
         env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          LASTSSH: 'Doing something after copying'
+        with:
+          host: ${{ secrets.DC_HOST }}
+          user: ${{ secrets.DC_USER }}
+          pass: ${{ secrets.DC_PASS }}
+          scp: |
+            ./dist/* => E:\software-develop\nginx-1.16.1\html
+          last_ssh: |
+            echo $LASTSSH 
+            nginx -t
+            nginx -s reload
