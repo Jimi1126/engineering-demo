@@ -7,9 +7,14 @@ on:
   pull_request:
     branches:
       - 'master'
+
+concurrency:
+  group: cd
+  cancel-in-progress: true
+
 jobs:
+  build:
   deploy:
-    needs: ci
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
