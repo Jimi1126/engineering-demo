@@ -13,7 +13,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
   deploy:
     runs-on: ubuntu-latest
     steps:
